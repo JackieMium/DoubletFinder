@@ -37,7 +37,7 @@ parallel_paramSweep <- function(n, n.real.cells,
   list.ind = 0
 
   ## Make merged real-artifical data
-  cat(paste0("\tCreating artificial doublets for a series of pN values.\n"))
+  cat(paste0("\n\tCreating artificial doublets for a series of pN values.\n"))
   n_doublets <- round(n.real.cells/(1 - pN[n]) - n.real.cells)
   real.cells1 <- sample(real.cells, n_doublets, replace = TRUE)
   real.cells2 <- sample(real.cells, n_doublets, replace = TRUE)
@@ -88,9 +88,7 @@ parallel_paramSweep <- function(n, n.real.cells,
   } else {
     cat("\tPre-processing using SCT pipeline...\n")
     seu_wdoublets <- CreateSeuratObject(counts = data_wdoublets)
-
     seu_wdoublets <- SCTransform(seu_wdoublets, verbose = FALSE)
-
     seu_wdoublets <- RunPCA(seu_wdoublets, npcs = length(PCs), verbose = FALSE)
   }
 
@@ -113,8 +111,9 @@ parallel_paramSweep <- function(n, n.real.cells,
 
   ## Compute pANN across pK sweep
   cat("\tComputing pANN across all pK...\n")
+  cat("\t\tpK = \n")
   for (k in 1:length(pK)) {
-    cat(paste0("\t\tpK = ", pK[k], "...\n"))
+    cat(paste0(pK[k], "..."))
     pk.temp <- round(nCells * pK[k])
     pANN <- as.data.frame(matrix(0L, nrow = n.real.cells, ncol = 1))
     colnames(pANN) <- "pANN"

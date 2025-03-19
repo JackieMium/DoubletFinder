@@ -106,5 +106,4 @@ paramSweep <- function(seu, PCs=1:10, sct = FALSE, num.cores=1) {
   }
   names(sweep.res.list) <- name.vec
   return(sweep.res.list)
-
 }
