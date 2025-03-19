@@ -83,7 +83,7 @@ doubletFinder <- function(seu,
     data <- counts[, real.cells]
     n_real.cells <- length(real.cells)
     n_doublets <- round(n_real.cells/(1 - pN) - n_real.cells)
-    print(paste("Creating",n_doublets,"artificial doublets...",sep=" "))
+    cat(paste0("\tCreating ",n_doublets," artificial doublets ...\n"))
     real.cells1 <- sample(real.cells, n_doublets, replace = TRUE)
     real.cells2 <- sample(real.cells, n_doublets, replace = TRUE)
     doublets <- (data[, real.cells1] + data[, real.cells2])/2
@@ -103,17 +103,17 @@ doubletFinder <- function(seu,
     orig.commands <- seu@commands
 
     ## Pre-process Seurat object
+    cat("\tLast time Seurat pipeline before classifying doublets...\n")
     if (!sct) {
-      print("Creating Seurat object...")
+      cat("\t\tPre-processing by the standard Seurat pipeline...\n")
       seu_wdoublets <- CreateSeuratObject(counts = data_wdoublets)
 
-      print("Normalizing Seurat object...")
       seu_wdoublets <- NormalizeData(seu_wdoublets,
                                      normalization.method = orig.commands$NormalizeData.RNA@params$normalization.method,
                                      scale.factor = orig.commands$NormalizeData.RNA@params$scale.factor,
-                                     margin = orig.commands$NormalizeData.RNA@params$margin)
+                                     margin = orig.commands$NormalizeData.RNA@params$margin,
+                                     verbose = FALSE)
 
-      print("Finding variable genes...")
       seu_wdoublets <- FindVariableFeatures(seu_wdoublets,
                                             selection.method = orig.commands$FindVariableFeatures.RNA$selection.method,
                                             loess.span = orig.commands$FindVariableFeatures.RNA$loess.span,
@@ -124,9 +124,9 @@ doubletFinder <- function(seu,
                                             binning.method = orig.commands$FindVariableFeatures.RNA$binning.method,
                                             nfeatures = orig.commands$FindVariableFeatures.RNA$nfeatures,
                                             mean.cutoff = orig.commands$FindVariableFeatures.RNA$mean.cutoff,
-                                            dispersion.cutoff = orig.commands$FindVariableFeatures.RNA$dispersion.cutoff)
+                                            dispersion.cutoff = orig.commands$FindVariableFeatures.RNA$dispersion.cutoff,
+                                            verbose = FALSE)
 
-      print("Scaling data...")
       seu_wdoublets <- ScaleData(seu_wdoublets,
                                  features = orig.commands$ScaleData.RNA$features,
                                  model.use = orig.commands$ScaleData.RNA$model.use,
@@ -134,28 +134,25 @@ doubletFinder <- function(seu,
                                  do.center = orig.commands$ScaleData.RNA$do.center,
                                  scale.max = orig.commands$ScaleData.RNA$scale.max,
                                  block.size = orig.commands$ScaleData.RNA$block.size,
-                                 min.cells.to.block = orig.commands$ScaleData.RNA$min.cells.to.block)
+                                 min.cells.to.block = orig.commands$ScaleData.RNA$min.cells.to.block,
+                                 verbose = FALSE)
 
-      print("Running PCA...")
       seu_wdoublets <- RunPCA(seu_wdoublets,
                               features = orig.commands$ScaleData.RNA$features,
                               npcs = length(PCs),
                               rev.pca =  orig.commands$RunPCA.RNA$rev.pca,
                               weight.by.var = orig.commands$RunPCA.RNA$weight.by.var,
-                              verbose=FALSE)
+                              verbose = FALSE)
       pca.coord <- seu_wdoublets@reductions$pca@cell.embeddings[ , PCs]
       cell.names <- rownames(seu_wdoublets@meta.data)
       nCells <- length(cell.names)
       rm(seu_wdoublets); gc() # Free up memory
     } else {
-      print("Creating Seurat object...")
+      cat("\t\tPre-processing using SCT pipeline...\n")
       seu_wdoublets <- CreateSeuratObject(counts = data_wdoublets)
+      seu_wdoublets <- SCTransform(seu_wdoublets, verbose = FALSE)
+      seu_wdoublets <- RunPCA(seu_wdoublets, npcs = length(PCs), verbose = FALSE)
 
-      print("Running SCTransform...")
-      seu_wdoublets <- SCTransform(seu_wdoublets)
-
-      print("Running PCA...")
-      seu_wdoublets <- RunPCA(seu_wdoublets, npcs = length(PCs))
       pca.coord <- seu_wdoublets@reductions$pca@cell.embeddings[ , PCs]
       cell.names <- rownames(seu_wdoublets@meta.data)
       nCells <- length(cell.names)
@@ -163,11 +160,11 @@ doubletFinder <- function(seu,
     }
 
     ## Compute PC distance matrix
-    print("Calculating PC distance matrix...")
+    cat("\tCalculating PC distance matrix...\n")
     dist.mat <- fields::rdist(pca.coord)
 
     ## Compute pANN
-    print("Computing pANN...")
+    cat("\tComputing pANN...\n")
     pANN <- as.data.frame(matrix(0L, nrow = n_real.cells, ncol = 1))
     if(!is.null(annotations)){
       neighbor_types <- as.data.frame(matrix(0L, nrow = n_real.cells, ncol = length(levels(doublet_types1))))
@@ -193,7 +190,7 @@ doubletFinder <- function(seu,
         }
       }
     }
-    print("Classifying doublets..")
+    cat("\tClassifying doublets...\t")
     classifications <- rep("Singlet",n_real.cells)
     classifications[order(pANN$pANN[1:n_real.cells], decreasing=TRUE)[1:nExp]] <- "Doublet"
     seu@meta.data[, paste("pANN",pN,pK,nExp,sep="_")] <- pANN[rownames(seu@meta.data), 1]
