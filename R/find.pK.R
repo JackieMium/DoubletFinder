@@ -45,10 +45,10 @@ find.pK <- function(sweep.stats) {
     }
 
     ## Plot for visual validation of BCmvn distribution
-    par(mar=rep(1,4))
-    x <- plot(x=bc.mvn$ParamID, y=bc.mvn$BCmetric, pch=16, col="#41b6c4", cex=0.75)
-    x <- lines(x=bc.mvn$ParamID, y=bc.mvn$BCmetric, col="#41b6c4")
-    print(x)
+    #par(mar=rep(1,4))
+    #x <- plot(x=bc.mvn$ParamID, y=bc.mvn$BCmetric, pch=16, col="#41b6c4", cex=0.75)
+    #x <- lines(x=bc.mvn$ParamID, y=bc.mvn$BCmetric, col="#41b6c4")
+    #print(x)
 
     return(bc.mvn)
 
@@ -74,14 +74,14 @@ find.pK <- function(sweep.stats) {
     }
 
     ## Plot for visual validation of BCmvn distribution
-    par(mar=rep(1,4))
-    x <- plot(x=bc.mvn$ParamID, y=bc.mvn$MeanAUC, pch=18, col="black", cex=0.75,xlab=NA, ylab = NA)
-    x <- lines(x=bc.mvn$ParamID, y=bc.mvn$MeanAUC, col="black", lty=2)
-    par(new=TRUE)
-    x <- plot(x=bc.mvn$ParamID, y=bc.mvn$BCmetric, pch=16, col="#41b6c4", cex=0.75)
-    axis(side=4)
-    x <- lines(x=bc.mvn$ParamID, y=bc.mvn$BCmetric, col="#41b6c4")
-    print(x)
+    #par(mar=rep(1,4))
+    #x <- plot(x=bc.mvn$ParamID, y=bc.mvn$MeanAUC, pch=18, col="black", cex=0.75,xlab=NA, ylab = NA)
+    #x <- lines(x=bc.mvn$ParamID, y=bc.mvn$MeanAUC, col="black", lty=2)
+    #par(new=TRUE)
+    #x <- plot(x=bc.mvn$ParamID, y=bc.mvn$BCmetric, pch=16, col="#41b6c4", cex=0.75)
+    #axis(side=4)
+    #x <- lines(x=bc.mvn$ParamID, y=bc.mvn$BCmetric, col="#41b6c4")
+    #print(x)
 
     return(bc.mvn)
 
